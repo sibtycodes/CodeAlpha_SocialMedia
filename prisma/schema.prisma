@@ -1,0 +1,85 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "cockroachdb"
+  url      = env("DATABASE_URL")
+}
+
+//create a new model User with firstName, lastName, email, and password
+model User {
+  id        String   @id @unique @default(uuid())
+  fullname  String
+  username  String   @unique
+  email     String
+  password  String
+  bio       String
+  birthDate String
+  followers String[]
+  following String[]
+
+  profilePics        String[] //A user can store many profile pics
+  posts              Post[] //A user can have many posts
+  likes              Like[] //A user can have many likes
+  stories            Stories[]
+  authorNameComments Comments[] @relation(name: "AuthorNameRelation") //A user can have many comments
+  authorIdComments   Comments[] @relation(name: "AuthorRelation") //A user can have many comments
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+//create a new model Post with title, content,pictures, and User
+model Post {
+  id String @id @unique @default(uuid())
+
+  content   String
+  pictures  String[]
+  fullname  String
+  username  String
+  likes     Like[] //a post has many likes
+  comments  Comments[] // a post has many comments
+  profile   String
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  userId String //relation with user
+  author User   @relation(fields: [userId], references: [id])
+}
+
+model Like {
+  id        String   @id @unique @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  likerName String
+  likerPic  String
+  postId    String //relation with posts many to one
+  userId    String //relation with user many to one
+  post      Post     @relation(fields: [postId], references: [id])
+  author    User     @relation(fields: [userId], references: [id])
+}
+
+//create Comments model
+
+model Comments {
+  id            String @id @unique @default(uuid())
+  commenterName String
+  commenterId   String
+  postId        String
+  comment       String
+  commenterPic  String
+  likes         String[]
+  authorName User @relation(fields: [commenterName], references: [username], name: "AuthorNameRelation")
+  author     User @relation(fields: [commenterId], references: [id], name: "AuthorRelation")
+  post       Post @relation(fields: [postId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+
+

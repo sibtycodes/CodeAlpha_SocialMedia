@@ -1,0 +1,1 @@
+get msgs from store and display , check if sending msg works
